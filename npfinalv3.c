@@ -64,6 +64,27 @@ void add_end(struct node *list, struct node * new_node){
     new_node->index=current->index+1;
     new_node->next = NULL;
 }
+void deleter(struct node** head, struct node* o_node){
+    struct node* n= NULL;
+    struct node* nn=NULL;
+
+    if((*head)==o_node){
+        n= *head;
+        *head=(*head)->next;
+        free(n);
+        return;
+    }
+    nn=*head;
+    while(nn!=NULL){
+        if(nn==o_node){
+            n->next=nn->next;
+            free(nn);
+            break;
+        }
+        n=nn;
+        nn=nn->next;
+    }
+}
 void print_node_before_selection(struct node * current){
     printf("%s%s\n",BLUE_3, current->problem);
     printf("%s", KNRM);
@@ -145,53 +166,11 @@ int find_n_all(struct node* mylist){
 void clear(){
     system("clear");
 }
-print_exit_menu(){
+void print_exit_menu(){
     printf("Exit Menu:\n");
 }
-void random_node(struct node** mylist){
-    int rand_i, i;
-    int n = find_n_all(*mylist);
-    int get_choice=0;
-    struct node* pt = *mylist;
 
-    if(n==0) *list= get_problem_files() ;
-    n = find_n_all(*mylist);
-    srand(time(NULL));
-    rand_i = rand()%n;
-    for(i=0;i<rand_i;i++) pt= pt->next;
-    print_node_before_selection(pt);
-    scanf("%d", &get_choice);
-    while(!((get_choice==1)||(get_choice==2) ||(get_choice==-1))){
-        clear();
-        printf("%sWrong input!\nPlease try again!\n", RED);
-        print_node_before_selection(pt);
-        scanf("%d", &get_choice);
-    }
-    clear();
-    if(i!=-1) print_node_after_selection(*mylist, pt, get_choice);
-    else      print_exit_menu();
-}
-void deleter(struct node** head, struct node* o_node){
-    struct node* n= NULL;
-    struct node* nn=NULL;
 
-    if((*head)==o_node){
-        n= *head;
-        *head=(*head)->next;
-        free(n);
-        return;
-    }
-    nn=*head;
-    while(nn!=NULL){
-        if(nn==o_node){
-            n->next=nn->next;
-            free(nn);
-            break;
-        }
-        n=nn;
-        nn=nn->next;
-    }
-}
 struct node * get_problem_files(){
     FILE * fp, *fpin;
     char inname[MAX_CHAR_LEN+10];
@@ -271,7 +250,29 @@ struct node * get_problem_files(){
     fclose(fp);
     return list;
 }
+void random_node(struct node** mylist){
+    int rand_i, i;
+    int n = find_n_all(*mylist);
+    int get_choice=0;
+    struct node* pt = *mylist;
 
+    if(n==0) *mylist= get_problem_files() ;
+    n = find_n_all(*mylist);
+    srand(time(NULL));
+    rand_i = rand()%n;
+    for(i=0;i<rand_i;i++) pt= pt->next;
+    print_node_before_selection(pt);
+    scanf("%d", &get_choice);
+    while(!((get_choice==1)||(get_choice==2) ||(get_choice==-1))){
+        clear();
+        printf("%sWrong input!\nPlease try again!\n", RED);
+        print_node_before_selection(pt);
+        scanf("%d", &get_choice);
+    }
+    clear();
+    if(i!=-1) print_node_after_selection(*mylist, pt, get_choice);
+    else      print_exit_menu();
+}
 int main(){
     struct node *mylist;
 
