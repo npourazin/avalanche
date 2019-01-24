@@ -29,6 +29,7 @@
 #define NONE        "\033[0m"
 
 int death_flag=0, quit_flag=0;
+int game_started=1;
 int n=0;
 
 struct stats{
@@ -168,6 +169,7 @@ void print_node_after_selection(struct node** plist, struct node * current , int
 }
 int find_n_all(struct node* mylist){
     struct node* c= mylist;
+    if(mylist==NULL) return 0;
     while(c->next!=NULL) c= c->next;
     n = c->index+1;
     printf("n=%d\n", n);
@@ -197,6 +199,7 @@ void set_usr_data(){
         if(strcmp(usr_king.name, temp.name)==0){
             usr_king.now_my=my;
             usr_king.pgame = !death_flag;
+            //struct node* pt;
             ///usr damn this shit
             ///come here u little peice of shit
             fseek(fp, -sizeof(struct usrdata), SEEK_CUR);
@@ -308,6 +311,20 @@ void random_node(struct node** mylist){
 
     if(n==0){
         *mylist = get_problem_files();
+        if(game_started){
+            struct node* pt = *mylist;
+            while(pt->next!=NULL){ ///!
+                pt->number = usr_king.problems_left[pt->index];
+                printf("%d : %d\n", pt->index, pt->number);
+                if(pt->number==0) {
+                    //printf("boogh %d\n", pt->index);
+                   // deleter(mylist, pt);
+                    n--;
+                }
+                pt = pt->next;
+            }
+            game_started=0;
+        }
         if(*mylist== NULL){printf("There seems to be a problem with getting input files!\n"); exit(-1);}
         n=find_n_all(*mylist);
     }
@@ -366,7 +383,7 @@ struct usrdata get_usr_data(){
         strcpy(usr1.name, name1);
         //printf("%s %s", usr1.name, name1);
         usr1.pgame =1;
-        for(int j=0;j<n;j++)usr1.problems_left[j]=1;
+        for(int j=0;j<n;j++)usr1.problems_left[j]=3;
         usr1.now_my.poeple=usr1.now_my.court= usr1.now_my.treasury =50;
         fseek(fp, 0, SEEK_END);
         fwrite(&usr1, sizeof(struct usrdata), 1, fp);
@@ -378,10 +395,17 @@ struct usrdata get_usr_data(){
 int main(){
     struct node *mylist=NULL;
     //struct usrdata usr_king;
-    my.court=my.poeple=my.treasury=50;
+    //my.court=my.poeple=my.treasury=50;
     //mylist=get_problem_files();
+    ///fill mylist?
+    ///struct user also has a number of nodes left?
+
+    n= find_n_all(mylist);
     usr_king = get_usr_data();
-    set_usr_data();
+    for(int i=0;i<n;i++) printf("---%d", usr_king.problems_left[i]);
+    printf("what?");
+    my = usr_king.now_my;
+    //set_usr_data();
 
     while(!death_flag && !quit_flag){
         random_node(&mylist);
