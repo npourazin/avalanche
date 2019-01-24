@@ -1,3 +1,4 @@
+//now ok
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -206,7 +207,7 @@ void set_usr_data(){
         if(fread(&temp, sizeof(struct usrdata), 1, fp) <1) break;
         if(strcmp(usr_king.name, temp.name)==0){
             usr_king.now_my=my;
-            usr_king.pgame = !death_flag;
+            usr_king.pgame = death_flag;
             fseek(fp, -sizeof(struct usrdata), SEEK_CUR);
             fwrite(&usr_king, sizeof(struct usrdata), 1, fp);
             break;
@@ -358,7 +359,7 @@ struct usrdata get_usr_data(){
         if(strcmp(name1, temp.name)==0){
             if(temp.pgame==0){
                 temp.now_my.poeple=temp.now_my.court= temp.now_my.treasury =50;
-                temp.pgame= !death_flag;
+                temp.pgame=1;
                 fseek(fp, -sizeof(struct usrdata), SEEK_CUR);
                 fwrite(&temp, sizeof(struct usrdata), 1, fp);
             }
@@ -391,6 +392,9 @@ int main(){
     usr_king = get_usr_data();
     set_usr_data();
 
+
+   // if(mylist==NULL){printf("There seems to be a problem with getting input files!\n"); return -1;}
+    //print_list(mylist);
     while(!death_flag && !quit_flag){
         random_node(&mylist);
         //set_usr_data();
