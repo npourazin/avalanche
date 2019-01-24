@@ -9,7 +9,9 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
+
 #define MAX_CHAR_LEN 1000+10
+
 #define KNRM  "\x1B[0m"
 #define RED  "\x1B[31m"
 #define GREEN  "\x1B[32m"
@@ -24,7 +26,6 @@
 #define BLUE_9 "\x1b[34;9;1m" ///line
 #define BLUE_4 "\x1b[34;4;1m" ///underline
 #define BLUE_S "\x1b[34;1m"
-
 #define NONE        "\033[0m"
 
 int death_flag=0, quit_flag=0;
@@ -309,43 +310,25 @@ void random_node(struct node** mylist){
     //n = find_n_all(*mylist);
     srand(time(NULL));
     rand_i = rand()%n;
-    rand_i =0;
+    //rand_i =0;
     for(i=0;i<rand_i;i++) pt= pt->next;
     print_node_before_selection(pt);
     //scanf("%d", &get_choice);
-    //char_choice = getchar();
-    //get_choice=atoi(char_choice);
-    //int t=0;
-    scanf("%d", &get_choice);
-    int flager=0;
-  /*  while(1){
-        //clear();
-        if(((get_choice==1)||(get_choice==2) ||(get_choice==-1))) break;
-        if(get_choice==3) break;
-        printf("%sWrong input!\nPlease try again!\n", RED);
-        printf("%s", KNRM);
-       // get_choice = getchar();
-       // print_node_before_selection(pt);
-       if (1 == scanf("%d", &get_choice)) {
-          printf("The result is:%d\n", get_choice);
-        }
-        else {
-          printf("Invalid data entered. please enter an integer!\n");
-        }
-        printf("  %d", get_choice);
-    }*/
+    //int flager=0;
+    int y=0;
     while(!((get_choice==1)||(get_choice==2) ||(get_choice==-1))){
-      //  if(((get_choice==1)||(get_choice==2) ||(get_choice==-1))) break;
-        //fflush(stdin);
-        if(get_choice==3) break;
-        if(flager && (!(scanf("%d", &get_choice)==1))){
+        //if(get_choice==3) break;
+
+        if((!(scanf("%d", &get_choice)==1))){
             getchar();
         }
-        flager=1;
-        printf("%sInvalid input!\nPlease try again!\n", RED);
+
+//        flager=1;
+        if(!((get_choice==1)||(get_choice==2) ||(get_choice==-1)))
+            printf("%sInvalid input!\nPlease try again!\n", RED);
         printf("%s", KNRM);
     }
-    if(get_choice==3) print_list(*mylist);
+    //if(get_choice==3) print_list(*mylist);
     //clear();
     if(i!=-1) print_node_after_selection(mylist, pt, get_choice);
     else  {    print_exit_menu();}
