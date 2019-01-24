@@ -53,20 +53,23 @@ struct usrdata{
     int pgame; ///is 1 if quit & is 0 if lost
     int problems_left[MAX_PROBLEM_N];
     struct stats now_my;
+    int pnumber;
 }usr_king;
 
 
-void file_name_pre(char st[MAX_CHAR_LEN+10]){ ///!
-    int len = strlen(st);
-    int i=0;
-    for(i=len;i>=0;i--){
-        st[i+2]=st[i];
-    }
-    st[0]='.';
-    ///unix is right what about windows?
-    st[1]='/';
-    if(st[len+1]==10)
-        st[len]=0;
+void file_name_pre(char st[MAX_CHAR_LEN+10]){
+    #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+        int len = strlen(st);
+        int i=0;
+        for(i=len;i>=0;i--){
+            st[i+2]=st[i];
+        }
+        st[0]='.';
+        ///unix is right what about windows?
+        st[1]='/';
+        if(st[len+1]==10)
+            st[len]=0;
+    #endif // defined
 }
 void add_front(struct node **plist, struct node *new_node){ ///!
     new_node->next = *plist;
@@ -175,7 +178,7 @@ int find_n_all(struct node* mylist){
     printf("n=%d\n", n);
     return n;
 }
-void clear(){ ///clears screan
+void clear(){
     #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
         system("clear");
     #endif
@@ -184,7 +187,7 @@ void clear(){ ///clears screan
         system("cls");
     #endif
 }
-void set_usr_data(){
+void set_usr_data(){ //! : list of cur nodes
     FILE* fp;
     struct usrdata temp;
     int usr_found=0;
@@ -199,6 +202,7 @@ void set_usr_data(){
         if(strcmp(usr_king.name, temp.name)==0){
             usr_king.now_my=my;
             usr_king.pgame = !death_flag;
+            ///check for usr_king pnumbber;
             //struct node* pt;
             ///usr damn this shit
             ///come here u little peice of shit
@@ -209,22 +213,21 @@ void set_usr_data(){
     }
     fclose(fp);
 }
-void print_exit_menu(int pg){ ///!
-    char ans;
-    if(pg==1){
+void print_exit_menu(){
+    if(!death_flag){
+        char ans;
         printf("Do you want to save your current game? [y/n]\n");
         getchar();
         ans = getchar();
-        if(ans=='y') set_usr_data(pg);
+        if(ans=='y') set_usr_data();
         printf("ok! bye\n");
     }
+    else{
+        printf("You LOST!!!\n");
+        set_usr_data();
+    }
+}
 
-}
-void print_exit_menu2(){
-    printf("You LOST!!!\n");
-//    pgame=0;
-    print_exit_menu(0);
-}
 struct node * get_problem_files(){
     FILE * fp, *fpin;
     char inname[MAX_CHAR_LEN+10];
@@ -304,7 +307,7 @@ struct node * get_problem_files(){
     fclose(fp);
     return list;
 }
-void random_node(struct node** mylist){
+void random_node(struct node** mylist){ ///! : list of cur nodes
     int rand_i, i;
     int get_choice=0;
     struct node* pt = NULL;
@@ -402,9 +405,10 @@ int main(){
 
     n= find_n_all(mylist);
     usr_king = get_usr_data();
-    for(int i=0;i<n;i++) printf("---%d", usr_king.problems_left[i]);
-    printf("what?");
     my = usr_king.now_my;
+        printf("Your currennt stats:\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
+
+
     //set_usr_data();
 
     while(!death_flag && !quit_flag){
@@ -412,7 +416,7 @@ int main(){
         //set_usr_data();
     }
 
-    if(!quit_flag) print_exit_menu2();
+    if(!quit_flag) print_exit_menu();
     //print_list(mylist);
     return 0;
 }
