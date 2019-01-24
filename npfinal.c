@@ -47,12 +47,12 @@ struct node{
     struct solution choice[2];
     struct node* next;
 };
-struct userdata{
+struct usrdata{
     char name[MAX_CHAR_LEN+10];
     int pgame; ///is 1 if quit & is 0 if lost
     int problems_left[MAX_PROBLEM_N];
     struct stats now_my;
-};
+}usr_king;
 
 
 void file_name_pre(char st[MAX_CHAR_LEN+10]){ ///!
@@ -81,33 +81,6 @@ void add_end(struct node *list, struct node * new_node){
     new_node->index=current->index+1;
     new_node->next = NULL;
 }
-/*void deleter(struct node** head, struct node* o_node){
-    struct node* n1= NULL;
-    struct node* nn1=NULL;
-
-    printf(" index: %d\n", (*head));
-
-    if((*head)==o_node){
-        n1= *head;
-        printf("new head has been placed: index: %d\n", (*head));
-
-        printf("new head has been placed: index: %d\n", (*head)->next);
-        (*head)=(*head)->next;
-        free(n1);
-        printf("new head has been placed: index: %d\n", (*head)->next);
-        return;
-    }
-    nn1=*head;
-    while(nn1!=NULL){
-        if(nn1==o_node){
-            n1->next=nn1->next;
-            free(nn1);
-            break;
-        }
-        n1=nn1;
-        nn1=nn1->next;
-    }
-}*/
 void deleter(struct node **list, struct node *o_node){
     struct node *n = NULL;
     struct node *nn = NULL;
@@ -219,8 +192,43 @@ void clear(){ ///clears screan
         system("cls");
     #endif
 }
-void print_exit_menu(){ ///!
-    printf("Exit Menu:\n");
+void set_usr_data(){
+    FILE* fp;
+    struct usrdata temp;
+    int usr_found=0;
+
+    fp = fopen("./USER_NAMES.bin", "rb+");
+    if(fp==NULL){
+            printf("\nCannot open file\n");
+            exit(-1);
+    }
+    while(1){
+        if(fread(&temp, sizeof(struct usrdata), 1, fp) <1) break;
+        if(strcmp(usr_king.name, temp.name)==0){
+            usr_king.now_my=my;
+            usr_king.pgame = death_flag;
+            fseek(fp, -sizeof(struct usrdata), SEEK_CUR);
+            fwrite(&usr_king, sizeof(struct usrdata), 1, fp);
+            break;
+        }
+    }
+    fclose(fp);
+}
+void print_exit_menu(int pg){ ///!
+    char ans;
+    if(pg==1){
+        printf("Do you want to save your current game? [y/n]\n");
+        getchar();
+        ans = getchar();
+        if(ans=='y') set_usr_data(pg);
+        printf("ok! bye\n");
+    }
+
+}
+void print_exit_menu2(){
+    printf("You LOST!!!\n");
+//    pgame=0;
+    print_exit_menu(0);
 }
 struct node * get_problem_files(){
     FILE * fp, *fpin;
@@ -312,37 +320,30 @@ void random_node(struct node** mylist){
         n=find_n_all(*mylist);
     }
     pt = *mylist;
-    //n = find_n_all(*mylist);
     srand(time(NULL));
     rand_i = rand()%n;
-    //rand_i =0;
     for(i=0;i<rand_i;i++) pt= pt->next;
     print_node_before_selection(pt);
-    //scanf("%d", &get_choice);
-    //int flager=0;
     int y=0;
     while(!((get_choice==1)||(get_choice==2) ||(get_choice==-1))){
-        //if(get_choice==3) break;
-
+        fflush(stdin);
         if((!(scanf("%d", &get_choice)==1))){
             getchar();
         }
 
-//        flager=1;
         if(!((get_choice==1)||(get_choice==2) ||(get_choice==-1)))
             printf("%sInvalid input!\nPlease try again!\n", RED);
         printf("%s", KNRM);
     }
-    //if(get_choice==3) print_list(*mylist);
-    clear();
+//    clear();
     if(get_choice!=-1) print_node_after_selection(mylist, pt, get_choice);
-   // else  { quit_flag=1;   print_exit_menu();}
+    else  { quit_flag=1;   print_exit_menu(1);}
 }
-struct userdata get_user_data(){
-    ///USER_NAMES.txt
+struct usrdata get_usr_data(){
+    ///usr_NAMES.txt
     FILE* fp;
-    struct userdata temp, user1;
-    int user_found=0;
+    struct usrdata temp, usr1;
+    int usr_found=0, a1=0;
     char name1[MAX_CHAR_LEN];
 
     fp = fopen("./USER_NAMES.bin", "rb+");
@@ -352,37 +353,53 @@ struct userdata get_user_data(){
     }
     printf("Enter your name: ");
     gets(name1);
-    while(fread(&temp, sizeof(struct userdata), 1, fp)>=1){
-        if(strcmp(name1, temp.name)){
-            clear();
-            printf("Welcome back, %s!", name1);
-            user1 = temp;
-            user_found=1;
+    while(1){
+        if( fread(&temp, sizeof(struct usrdata), 1, fp) <1) break;
+        if(strcmp(name1, temp.name)==0){
+            if(temp.pgame==0){
+                temp.now_my.poeple=temp.now_my.court= temp.now_my.treasury =50;
+                temp.pgame=1;
+                fseek(fp, -sizeof(struct usrdata), SEEK_CUR);
+                fwrite(&temp, sizeof(struct usrdata), 1, fp);
+            }
+            printf("Welcome back, %s!\n\n%s", name1, KNRM);
+            usr1 = temp;
+            usr_found=1;
             break;
         }
     }
-    if(user_found==0){
-        strcpy(user1.name, name1 );
+    if(usr_found==0){
+        printf("Welcome to 'melat dar hale sooghoot' game, %s!!\n\n%s", name1, KNRM );
+        ///tutorial!!!
+        strcpy(usr1.name, name1);
+        //printf("%s %s", usr1.name, name1);
+        usr1.pgame =1;
+        for(int j=0;j<n;j++)usr1.problems_left[j]=1;
+        usr1.now_my.poeple=usr1.now_my.court= usr1.now_my.treasury =50;
+        fseek(fp, 0, SEEK_END);
+        fwrite(&usr1, sizeof(struct usrdata), 1, fp);
     }
-
-    return user1;
+    fclose(fp);
+    return usr1;
 }
+
 int main(){
     struct node *mylist=NULL;
-    struct userdata user_king;
-    //mylist=get_problem_files();
-    user_king = get_user_data();
-    //set_user_data(user_king);
-
+    //struct usrdata usr_king;
     my.court=my.poeple=my.treasury=50;
+    //mylist=get_problem_files();
+    usr_king = get_usr_data();
+    set_usr_data();
+
+
    // if(mylist==NULL){printf("There seems to be a problem with getting input files!\n"); return -1;}
     //print_list(mylist);
     while(!death_flag && !quit_flag){
         random_node(&mylist);
-        //set_user_data();
+        //set_usr_data();
     }
-    print_exit_menu();
-    if(quit_flag)
+
+    if(!quit_flag) print_exit_menu2();
     //print_list(mylist);
     return 0;
 }
