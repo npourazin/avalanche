@@ -10,8 +10,8 @@
 #include <windows.h>
 #endif
 
-#define MAX_CHAR_LEN 1000+10
-
+#define MAX_CHAR_LEN 1000
+#define MAX_PROBLEM_N 1000
 #define KNRM  "\x1B[0m"
 #define RED  "\x1B[31m"
 #define GREEN  "\x1B[32m"
@@ -37,18 +37,25 @@ struct stats{
     int treasury;
 } my;
 struct solution{
-    char ans[MAX_CHAR_LEN];
+    char ans[MAX_CHAR_LEN+10];
     int dif[3];
 };
 struct node{
     int number;
     int index;
-    char problem[MAX_CHAR_LEN];
+    char problem[MAX_CHAR_LEN+10];
     struct solution choice[2];
     struct node* next;
 };
+struct userdata{
+    char name[MAX_CHAR_LEN+10];
+    int pgame; ///is 1 if quit & is 0 if lost
+    int problems_left[MAX_PROBLEM_N];
+    struct stats now_my;
+};
 
-void file_name_pre(char st[MAX_CHAR_LEN]){ ///!
+
+void file_name_pre(char st[MAX_CHAR_LEN+10]){ ///!
     int len = strlen(st);
     int i=0;
     for(i=len;i>=0;i--){
@@ -125,37 +132,37 @@ void deleter(struct node **list, struct node *o_node){
     return;
 }
 void print_node_before_selection(struct node * current){ ///!
-    /*printf("%s%s\n",BLUE_3, current->problem);
+    printf("%s%s\n",BLUE_3, current->problem);
     printf("%s", KNRM);
     printf("%s[1] %s\n",BLUE_4 ,current->choice[0].ans);
     printf("%s", KNRM);
     printf("%s[2] %s\n",BLUE_4, current->choice[1].ans);
     printf("%s", KNRM);
     printf("%s[-1] Exit game!\n\n", RED);
-    printf("%s", KNRM);*/
+    printf("%s", KNRM);
     //print_node_after_selection(current, 1);
         //printf("%d%d%d\n", current->choice[0].dif[0], current->choice[0].dif[1], current->choice[0].dif[2]);
     //    current = current->next;
-    printf("Q%d: \n", current->index);
+    //printf("Q%d: \n", current->index);
 
 }
 int min(int a, int b){ return (a<b) ? a : b;}
 int max(int a, int b){ return (a>b) ? a : b;}
 
 void print_node_after_selection(struct node** plist, struct node * current , int ind){ ///!
-    //printf("%s%s\n",BLUE_3, current->problem);
+    printf("%s%s\n",BLUE_3, current->problem);
     ///if i==1 ||i==2
     if(ind!=-1){
-     /*   if(i==1){
+        if(ind==1){
             printf("%s[1] %s\n",BLUE_7 ,current->choice[0].ans);
             printf("%s", KNRM);
             printf("%s[2] %s\n",BLUE_9, current->choice[1].ans);
         }
-        if(i==2){
+        if(ind==2){
             printf("%s[1] %s\n",BLUE_9 ,current->choice[0].ans);
             printf("%s", KNRM);
             printf("%s[2] %s\n",BLUE_7, current->choice[1].ans);
-        }*/
+        }
         printf("%s", KNRM);
         current->number--; ///is atleast 1
 
@@ -181,9 +188,7 @@ void print_node_after_selection(struct node** plist, struct node * current , int
             ///u need the number of each node!
         }
         printf("%s", KNRM);
-        if(!death_flag){
-            printf("%sPoeple:%d, Court:%d, Treasury:%d\n",GREEN, my.poeple, my.court, my.treasury);
-        }
+        printf("%sPoeple:%d, Court:%d, Treasury:%d\n",GREEN, my.poeple, my.court, my.treasury);
         printf("%s", KNRM);
     }
 
@@ -329,20 +334,55 @@ void random_node(struct node** mylist){
         printf("%s", KNRM);
     }
     //if(get_choice==3) print_list(*mylist);
-    //clear();
-    if(i!=-1) print_node_after_selection(mylist, pt, get_choice);
-    else  {    print_exit_menu();}
+    clear();
+    if(get_choice!=-1) print_node_after_selection(mylist, pt, get_choice);
+   // else  { quit_flag=1;   print_exit_menu();}
+}
+struct userdata get_user_data(){
+    ///USER_NAMES.txt
+    FILE* fp;
+    struct userdata temp, user1;
+    int user_found=0;
+    char name1[MAX_CHAR_LEN];
+
+    fp = fopen("./USER_NAMES.bin", "rb+");
+    if(fp==NULL){
+            printf("\nCannot open file\n");
+            exit(-1);
+    }
+    printf("Enter your name: ");
+    gets(name1);
+    while(fread(&temp, sizeof(struct userdata), 1, fp)>=1){
+        if(strcmp(name1, temp.name)){
+            clear();
+            printf("Welcome back, %s!", name1);
+            user1 = temp;
+            user_found=1;
+            break;
+        }
+    }
+    if(user_found==0){
+        strcpy(user1.name, name1 );
+    }
+
+    return user1;
 }
 int main(){
     struct node *mylist=NULL;
-
+    struct userdata user_king;
     //mylist=get_problem_files();
+    user_king = get_user_data();
+    //set_user_data(user_king);
+
     my.court=my.poeple=my.treasury=50;
    // if(mylist==NULL){printf("There seems to be a problem with getting input files!\n"); return -1;}
     //print_list(mylist);
     while(!death_flag && !quit_flag){
         random_node(&mylist);
+        //set_user_data();
     }
+    print_exit_menu();
+    if(quit_flag)
     //print_list(mylist);
     return 0;
 }
