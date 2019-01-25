@@ -58,7 +58,31 @@ struct usrdata{
     int pnumber;
 }usr_king;
 
+int min(int, int);
+int max(int, int);
+void clear();
+void file_name_pre(char*);
+void add_front(struct node **, struct node *);
+void add_end(struct node *, struct node *);
+void deleter(struct node **, struct node *);
+void print_list(struct node *);
+void print_node_before_selection(struct node * );
+void print_stats();
+int find_usrs_number();
+int cmper(struct usrdata, struct usrdata);
+void sort_scoreboard_once(int);
+void sort_scoreboard(int);
+void show_scoreboard(int);
+void show_menu(struct node*);
+void print_node_after_selection(struct node**, struct node *, int);
+void find_n_all();
+struct usrdata get_usr_data();
+void set_usr_data();
+void set_usr_king(struct node*);
 void print_exit_menu();
+struct node * get_problem_files();
+void random_node(struct node**);
+
 int min(int a, int b){ return (a<b) ? a : b;}
 int max(int a, int b){ return (a>b) ? a : b;}
 void file_name_pre(char st[MAX_CHAR_LEN+10]){
@@ -202,7 +226,7 @@ void show_scoreboard(int num){
     struct usrdata temp;
     int cnt=0;
     int n=7;
-
+    //int cnt=0;
     FILE* fp;
     fp = fopen("./USER_NAMES.bin", "rb+");
     if(fp==NULL){
@@ -241,7 +265,7 @@ void show_menu(struct node* plist){
             if(strcmp(usr_king.name, temp.name)==0){
                 temp.now_my.poeple=temp.now_my.court= temp.now_my.treasury =50;
                 my.poeple=my.treasury=my.court=50;
-                temp.pgame= 1;
+                temp.pgame= !death_flag;
                 for(int i=0;i<MAX_PROBLEM_N;i++){
                     temp.problems_left[i] = (i<n) ? 3 : 0;
                 }
@@ -304,7 +328,7 @@ void print_node_after_selection(struct node** plist, struct node * current , int
             ///u need the number of each node!
         }
         printf("%s", KNRM);
-        printf("%sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n", GREEN, my.poeple, my.court, my.treasury);
+        printf("%sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n",GREEN, my.poeple, my.court, my.treasury);
         printf("%s", KNRM);
     }
     if(ind ==3){
@@ -359,8 +383,7 @@ struct usrdata get_usr_data(){
             if(temp.pgame==0 ){
                 ///this also should happen on ng_flag
                 temp.now_my.poeple=temp.now_my.court= temp.now_my.treasury =50;
-                ///temp.pgame= !death_flag;
-                temp.pgame = 1;
+                temp.pgame= !death_flag;
                 for(int i=0;i<MAX_PROBLEM_N;i++){
                     temp.problems_left[i] = (i<n) ? 3 : 0;
                 }
@@ -412,31 +435,20 @@ void set_usr_data(){ //! : list of cur nodes
     }
     fclose(fp);
 }
-void set_usr_king(struct node* list, int p){
-    if(p==1){
-        struct node* pt = list;
-        int i;
+void set_usr_king(struct node* list){
+    struct node* pt = list;
+    int i;
 
-        usr_king.now_my=my;
-        usr_king.pgame = !death_flag;
-        usr_king.pnumber = n;
+    usr_king.now_my=my;
+    usr_king.pgame = !death_flag;
+    usr_king.pnumber = n;
 
-        for(i=0;i<MAX_PROBLEM_N;i++){
-            usr_king.problems_left[i] = 0;
-        }
-        while(pt!=NULL){
-            usr_king.problems_left[pt->index] = pt->number;
-            pt = pt->next;
-        }
+    for(i=0;i<MAX_PROBLEM_N;i++){
+        usr_king.problems_left[i] = 0;
     }
-    if(p==0){
-        usr_king.now_my.poeple=usr_king.now_my.court=usr_king.now_my.treasury=50;
-        my.poeple=my.court=my.treasury=50;
-        usr_king.pgame = 1;
-        usr_king.pnumber = num;
-        for(int i=0;i<MAX_PROBLEM_N;i++){
-            usr_king.problems_left[i] = (i<num) ? 3 : 0;
-        }
+    while(pt!=NULL){
+        usr_king.problems_left[pt->index] = pt->number;
+        pt = pt->next;
     }
 }
 void print_exit_menu(){
@@ -454,6 +466,7 @@ void print_exit_menu(){
     }
     //exit(1);
 }
+
 struct node * get_problem_files(){
     FILE * fp, *fpin;
     char inname[MAX_CHAR_LEN+10];
@@ -561,7 +574,7 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
                 }
                 pt = pt->next;
             }
-            //game_started=0;
+            game_started=0;
 
         }
 
@@ -592,11 +605,11 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
 
 
 int main(){
-//    printf("⭐\n");
     struct node *mylist=NULL;
-    num = find_usrs_number();
 
+    num = find_usrs_number();
     find_n_all();
+
     usr_king = get_usr_data();
     #if !INTERFACE
     printf("got usr data\n");
@@ -607,9 +620,9 @@ int main(){
         //set_usr_data2();
         //set_usr_king(mylist);
         random_node(&mylist);
-
+        //clear();
     }
-    set_usr_king(mylist, 1);
+    set_usr_king(mylist);
     print_exit_menu();
     //printf("%d", n);
     //print_list(mylist);
