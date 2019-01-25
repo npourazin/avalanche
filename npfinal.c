@@ -89,25 +89,32 @@ void add_end(struct node *list, struct node * new_node){
 }
 void deleter(struct node **list, struct node *o_node){
     printf("node deleted\n");
-    struct node *n = NULL;
-    struct node *nn = NULL;
-
+    struct node *n1 =NULL ;
+    //printf("0");
+    struct node *nn1 = NULL;
+    printf("01\n");
     if((*list) == o_node){
-        n = *list;
+        printf("r\n");
+        n1 = *list;
+        printf("rrr\n");
         *list = (*list)-> next;
-        free(n);
+        printf("rr\n");
+       // free(n1);
         return;
     }
-    nn = *list;
-    while(nn!=NULL){
-        if(nn==o_node){
+    printf("uu\n");
+    //printf("1");
+    nn1 = *list;
+    printf("1\n");
+    while(nn1!=NULL){
+        if(nn1==o_node){
             ///jumps over the head as it was taken care of
-            n->next = nn->next;
-            free(nn);
+            n1->next = nn1->next;
+            //free(nn1);
             break;
         }
-        n=nn;
-        nn=nn->next;
+        n1=nn1;
+        nn1=nn1->next;
     }
     return;
 }
@@ -411,18 +418,20 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
     //printf("in random node:\n");
     if(n==0 || game_started){
 
-        printf("\n\n\n\n\n\n\n\n\nrefilled\n");
+        //printf("\n\n\n\n\n\n\n\n\nrefilled\n");
         *mylist = get_problem_files();
-        //deleter(mylist, *mylist);
-        //printf("bbb");
+
         if(game_started){
+            game_started=0;
+            for(int k=0;k<n;k++) printf("%d ", usr_king.problems_left[k]);
+            printf("\n");
             struct node* pt = *mylist;
             while(pt->next!=NULL){ ///!
                 pt->number = usr_king.problems_left[pt->index];
                 //printf("%d : %d\n", pt->index, pt->number);
                 if(pt->number==0) {
                     //printf("boogh %d\n", pt->index);
-                    //deleter(mylist, pt);
+                    deleter(mylist, pt);
                     n--;
                 }
                 pt = pt->next;
@@ -531,7 +540,7 @@ void sort_scoreboard_once(int size){
     }
     fclose(fp);
 }
-void sort_scoreboard(num){
+void sort_scoreboard(int num){
     for(int i=0;i<num;i++)
         sort_scoreboard_once(num);
 }
@@ -539,15 +548,14 @@ void sort_scoreboard(num){
 int main(){
     struct node *mylist=NULL;
     int num = find_usrs_number();
-
+    printf("%p", &mylist);
     sort_scoreboard(num);
-    show_scoreboard(num);
+    show_scoreboard(min(10, num));
     find_n_all();
     usr_king = get_usr_data();
     printf("got usr data\n");
     my = usr_king.now_my;
     printf("Your currennt stats:\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
-
     while(!death_flag && !quit_flag){
         //set_usr_data2();
         //set_usr_king(mylist);
