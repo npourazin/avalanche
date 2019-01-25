@@ -608,7 +608,13 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
     if(get_choice==1 || get_choice==2 || get_choice==3) print_node_after_selection(mylist, pt, get_choice);
     else  { quit_flag=1;}
 }
-
+void print_usr_data(){
+    for(int i=0;i<n;i++)
+        printf("%d ", usr_king.problems_left[i]);
+    printf("Name: %s, People: %d,Court: %d,Treasury: %d,", usr_king.name, usr_king.now_my.poeple, usr_king.now_my.court, usr_king.now_my.treasury);
+    printf(" lost or not: %s, n:%d\n", (usr_king.pgame)? "No": "Yes" , usr_king.pnumber);
+    //printf("%d")
+}
 
 int main(){
     struct node *mylist=NULL;
@@ -618,10 +624,11 @@ int main(){
     get_usr_data();
     for(int i=0;i<n;i++)
         printf("%d ", usr_king.problems_left[i]);
-       printf("\n");
+    printf("\n");
+    print_usr_data();
     while(!death_flag && !quit_flag){
         random_node(&mylist);
     }
-    print_exit_menu();
+
     return 0;
 }
