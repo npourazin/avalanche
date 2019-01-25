@@ -31,7 +31,7 @@
 int death_flag=0, quit_flag=0, ng_flag=0;
 int game_started=1;
 
-int n=0;
+int n=0, num=0;
 
 struct stats{
     int poeple;
@@ -88,29 +88,19 @@ void add_end(struct node *list, struct node * new_node){
     new_node->next = NULL;
 }
 void deleter(struct node **list, struct node *o_node){
-    printf("node deleted\n");
+//    printf("node deleted\n");
     struct node *n1 =NULL ;
-    //printf("0");
     struct node *nn1 = NULL;
-    printf("01\n");
     if((*list) == o_node){
-        printf("r\n");
         n1 = *list;
-        printf("rrr\n");
         *list = (*list)-> next;
-        printf("rr\n");
-       // free(n1);
         return;
     }
-    printf("uu\n");
-    //printf("1");
     nn1 = *list;
-    printf("1\n");
     while(nn1!=NULL){
         if(nn1==o_node){
             ///jumps over the head as it was taken care of
             n1->next = nn1->next;
-            //free(nn1);
             break;
         }
         n1=nn1;
@@ -146,16 +136,17 @@ void show_menu(struct node* plist){
     }
     print_list(plist);
     printf("\n");
-/*  if(get_choice==1){
+  if(get_choice==1){
 
     }
     if(get_choice==2){
-
+        sort_scoreboard(num);
+        show_scoreboard(min(10, num));
     }
     if(get_choice ==-1){
         print_exit_menu();
     }
-*/
+
 }
 void print_node_after_selection(struct node** plist, struct node * current , int ind){ ///!
     if(ind==1 || ind==2){
@@ -528,7 +519,6 @@ void sort_scoreboard_once(int size){
         fread(&temp1, sizeof(struct usrdata), 1, fp);
         fread(&temp2, sizeof(struct usrdata), 1, fp);
         if(cmper(temp1, temp2)==-1) {
-            printf("\nboogh\n");
             struct usrdata tt;
             tt = temp2;
             temp2 = temp1;
@@ -540,17 +530,15 @@ void sort_scoreboard_once(int size){
     }
     fclose(fp);
 }
-void sort_scoreboard(int num){
-    for(int i=0;i<num;i++)
+void sort_scoreboard(int num1){
+    for(int i=0;i<num1;i++)
         sort_scoreboard_once(num);
 }
 
 int main(){
     struct node *mylist=NULL;
-    int num = find_usrs_number();
-    printf("%p", &mylist);
-    sort_scoreboard(num);
-    show_scoreboard(min(10, num));
+    num = find_usrs_number();
+
     find_n_all();
     usr_king = get_usr_data();
     printf("got usr data\n");
