@@ -9,7 +9,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
-#define INTERFACE 0
+#define INTERFACE 1
 
 #define MAX_CHAR_LEN 1000
 #define MAX_PROBLEM_N 1000
@@ -191,11 +191,9 @@ int cmper(struct usrdata a, struct usrdata b){
     return -1;
 }
 void sort_scoreboard_once(int size){
-    char name1[MAX_CHAR_LEN];
     struct usrdata temp1, temp2;
-    int n=7;
-    //int cnt=0;
     FILE* fp;
+
     fp = fopen("./USER_NAMES.bin", "rb+");
     if(fp==NULL){
             printf("\nCannot open file\n");
@@ -222,12 +220,10 @@ void sort_scoreboard(int num1){
         sort_scoreboard_once(num);
 }
 void show_scoreboard(int num){
-    char name1[MAX_CHAR_LEN];
     struct usrdata temp;
     int cnt=0;
-    int n=7;
-    //int cnt=0;
     FILE* fp;
+
     fp = fopen("./USER_NAMES.bin", "rb+");
     if(fp==NULL){
             printf("\nCannot open file\n");
@@ -328,8 +324,13 @@ void print_node_after_selection(struct node** plist, struct node * current , int
             ///u need the number of each node!
         }
         printf("%s", KNRM);
+        //print_stats();
         printf("%sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n",GREEN, my.poeple, my.court, my.treasury);
         printf("%s", KNRM);
+        #if INTERFACE
+        mysleep();
+        clear();
+        #endif // INTERFACE
     }
     if(ind ==3){
         show_menu(*plist);
@@ -364,10 +365,19 @@ void clear(){
         system("cls");
     #endif
 }
+void mysleep(){ ///sleeps 1sec before updating to next generation
+    #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+        sleep(2);
+    #endif
+
+    #if defined(_WIN32) || defined(_WIN64)
+        Sleep(2000);
+    #endif
+}
 struct usrdata get_usr_data(){
     FILE* fp;
     struct usrdata temp, usr1;
-    int usr_found=0, a1=0;
+    int usr_found=0;
     char name1[MAX_CHAR_LEN];
 
     fp = fopen("./USER_NAMES.bin", "rb+");
@@ -550,7 +560,7 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
     int rand_i, i;
     int get_choice=0;
     struct node* pt = NULL;
-    struct node* cur = *mylist;
+    //struct node* cur = *mylist;
     //printf("in random node:\n");
     if(n==0 || game_started){
 
@@ -588,6 +598,7 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
     rand_i = rand()%n;
     for(i=0;i<rand_i;i++) pt= pt->next;
     print_node_before_selection(pt);
+
     while(!((get_choice==1)||(get_choice==2) ||(get_choice==-1) || (get_choice==3))){
         if((!(scanf("%d", &get_choice)==1))){
             while ((getchar()) != '\n');
@@ -597,8 +608,8 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
         }
         printf("%s", KNRM);
     }
-//    clear();
-    if(get_choice==1 || get_choice==2 || get_choice==3) print_node_after_selection(mylist, pt, get_choice);
+    clear();
+    if(get_choice==1 || get_choice==2 || get_choice==3) {print_node_after_selection(mylist, pt, get_choice);}
     else  { quit_flag=1;}
 }
 
