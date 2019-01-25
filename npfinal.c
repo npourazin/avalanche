@@ -416,26 +416,18 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
         //deleter(mylist, *mylist);
         //printf("bbb");
         if(game_started){
-            game_started=0;
-            for(int k=0;k<n;k++) printf("%d ", usr_king.problems_left[k]);
-            printf("\n");
-
-            //while(cur->next!=NULL){ ///!
-               // cur->number = usr_king.problems_left[cur->index];
+            struct node* pt = *mylist;
+            while(pt->next!=NULL){ ///!
+                pt->number = usr_king.problems_left[pt->index];
                 //printf("%d : %d\n", pt->index, pt->number);
-                //if(cur->number==0) {
-                    //struct node* pt2 = NULL;
-                   // struct node** ppp = mylist;
-                    //printf("boogh %d\n", pt1->index);
-                    //pt2 = pt1;
-                    //deleter(mylist, cur);
-                    //printf("boogh %d\n", pt1->index);
-                    //usr_king.pnumber--;
-                    //n--;
-               /// }
-             //   cur = cur->next;
-           //     printf("--boogh %d\n", cur->index);
-            //}//
+                if(pt->number==0) {
+                    //printf("boogh %d\n", pt->index);
+                    //deleter(mylist, pt);
+                    n--;
+                }
+                pt = pt->next;
+            }
+            game_started=0;
 
         }
 
