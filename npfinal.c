@@ -9,8 +9,8 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
-#define INTERFACE 1
-#define TERMINAL_CONSOLE 1
+#define INTERFACE 0
+#define TERMINAL_CONSOLE 0
 
 #define MAX_CHAR_LEN 1000
 #define MAX_PROBLEM_N 1000
@@ -185,6 +185,7 @@ void print_node_before_selection(struct node * current){
 
 }
 void print_node_after_selection(struct node** plist, struct node * current , int ind){
+    printf("in after\n");
     if(ind==1 || ind==2){
         #if TERMINAL_CONSOLE
         printf(" ⚖️  ");
@@ -334,6 +335,7 @@ void find_n_all(){
 void random_node(struct node** mylist){ ///! : list of cur nodes
     int rand_i, i;
     int get_choice=0;
+    printf("in random\n");
     struct node* pt = NULL;
     if(n==0 || game_started){
         ///filling(if (game_started)) or refilling (if (n==0)) the list
@@ -530,6 +532,7 @@ void show_menu(struct node* plist){
         print_exit_menu();
         exit(0);
     }
+    else return;
     printf("Press any key to resume game.\n");
     getchar();
     getchar();
@@ -569,7 +572,7 @@ struct usrdata get_usr_data(){
     printf("Enter your name: ");
     gets(name1);
     while(1){
-        if( fread(&temp, sizeof(struct usrdata), 1, fp) <1) break;
+        if(fread(&temp, sizeof(struct usrdata), 1, fp) <1) break;
         if(strcmp(name1, temp.name)==0){
             if(temp.pgame==0 ){
                 ///this also should happen on ng_flag
@@ -627,6 +630,27 @@ void set_usr_data(){ //! : list of cur nodes
     }
     fclose(fp);
 }
+void save_usr_data(){ //! : list of cur nodes
+    FILE* fp;
+    struct usrdata temp;
+    printf("in saver\n");
+    fp = fopen("./USER_LOGS.bin", "rb+");
+    if(fp==NULL){
+            printf("\nCannot open file\n");
+            exit(-1);
+    }
+    while(1){
+        if(fread(&temp, sizeof(struct usrdata), 1, fp) <1) break;
+        if(strcmp(usr_king.name, temp.name)==0){
+            fseek(fp, -sizeof(struct usrdata), SEEK_CUR);
+            fwrite(&usr_king, sizeof(struct usrdata), 1, fp);
+            return;
+        }
+    }
+    fseek(fp, 0, SEEK_END);
+    fwrite(&usr_king, sizeof(struct usrdata), 1, fp);
+    fclose(fp);
+}
 void set_usr_king(struct node* list){
     struct node* pt = list;
     int i;
@@ -644,7 +668,6 @@ void set_usr_king(struct node* list){
     }
 }
 
-
 int main(){
     struct node *mylist=NULL;
 
@@ -652,6 +675,7 @@ int main(){
     find_n_all();
 
     usr_king = get_usr_data();
+    save_usr_data();
     #if !INTERFACE
     printf("got usr data\n");
     #endif
@@ -660,11 +684,13 @@ int main(){
     print_stats();
     //printf("Your currennt stats:\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
     while(!death_flag && !quit_flag){
-        //set_usr_data2();
         //set_usr_king(mylist);
+        save_usr_data();
         random_node(&mylist);
         //clear();
     }
+    //set_usr_king(mylist);
+    save_usr_data();
     set_usr_king(mylist);
     print_exit_menu();
     //printf("%d", n);
