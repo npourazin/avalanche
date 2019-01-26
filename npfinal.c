@@ -9,8 +9,8 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
-#define INTERFACE 0
-#define TERMINAL_CONSOLE 0
+#define INTERFACE 1
+#define TERMINAL_CONSOLE 1
 
 #define MAX_CHAR_LEN 1000
 #define MAX_PROBLEM_N 1000
@@ -508,7 +508,7 @@ void show_scoreboard(int num){
 void show_menu(struct node* plist){
     int get_choice=0;
     char ex_p;
-    int right_choice_flag=0;
+    int r_c_flag=1;
     printf("%sMENU:\n", KNRM);
 
     printf(" [1] New game");
@@ -523,7 +523,7 @@ void show_menu(struct node* plist){
     #if TERMINAL_CONSOLE
     printf(" ⚡️ \n ");
     #endif // TERMINAL_CONSOLE
-    printf("[-1] Exit game\nelse, Enter any other number to resume game.\n");
+    printf("[-1] Exit\nelse, Enter any other number to resume game.\n");
     if((!(scanf("%d", &get_choice)==1))){
         while ((getchar()) != '\n');
     }
@@ -537,7 +537,6 @@ void show_menu(struct node* plist){
         printf(" ⛔  ");
         #endif // TERMINAL_CONSOLE
         printf("This feature is unfortunatly not available in this version, Stay tuned for further releses!!\n");
-        right_choice_flag =1;
       /*  FILE* fp;
         fp = fopen("./USER_NAMES.bin", "rb+");
         if(fp==NULL){
@@ -563,12 +562,11 @@ void show_menu(struct node* plist){
         printf("\n");
         print_stats();*/
     }
-    if(get_choice==2){
+    else if(get_choice==2){
         sort_scoreboard(num);
         show_scoreboard(min(10, num));
-        right_choice_flag=1;
     }
-    if(get_choice ==3){
+    else if(get_choice ==3){
         set_usr_king(plist);
         print_exit_menu();
         printf("\nExit? [y/n]\n");
@@ -578,22 +576,21 @@ void show_menu(struct node* plist){
             printf("ok! bye\n");
             exit(0);
         }
-        right_choice_flag=1;
     }
-    if(get_choice==-1){
+    else if(get_choice==-1){
         print_exit_menu();
         printf("ok! bye\n");
         exit(0);
-        right_choice_flag=1;
     }
-    if(right_choice_flag){
+    else r_c_flag=0;
+    if(r_c_flag){
         printf("Press ENTER to resume game.\n");
         getchar();
         getchar();
-        #if INTERFACE
-        clear();
-        #endif // INTERFACE
     }
+    #if INTERFACE
+        clear();
+    #endif // INTERFACE
 }
 void print_exit_menu(){
     if(!death_flag){
@@ -608,11 +605,7 @@ void print_exit_menu(){
         printf("\n\n\n           ️☠️  ☠️  ☠️ \n ️");
         #endif // TERMINAL_CONSOLE
         printf("         You LOST!!!\n\n\n\n");
-        char ans;
-        printf("Do you want to save your current game? [y/n]\n");
-        getchar();
-        ans = getchar();
-        if(ans=='y') set_usr_data();
+        set_usr_data();
     }
 }
 ///getting usr data
@@ -667,12 +660,12 @@ struct usrdata get_usr_data(){
     return usr1;
 }
 ///setting usr data
-void set_file_usr_data(char inname[]){
+void set_usr_data(){
     FILE* fp;
     struct usrdata temp;
     int usr_found=0;
 
-    fp = fopen(inname, "rb+");
+    fp = fopen("./USER_NAMES.bin", "rb+");
     if(fp==NULL){
             printf("\nCannot open file\n");
             exit(-1);
@@ -686,16 +679,10 @@ void set_file_usr_data(char inname[]){
             ///come here u little peice of shit
             fseek(fp, -sizeof(struct usrdata), SEEK_CUR);
             fwrite(&usr_king, sizeof(struct usrdata), 1, fp);
-            return;
+            break;
         }
     }
-    fseek(fp, 0, SEEK_END);
-    fwrite(&usr_king, sizeof(struct usrdata), 1, fp);
     fclose(fp);
-}
-void set_usr_data(){
-    set_file_usr_data("./USER_NAMES.bin");
-    set_file_usr_data("./USER_LOGS.bin");
 }
 void set_usr_king(struct node* list){
     struct node* pt = list;
@@ -715,46 +702,15 @@ void set_usr_king(struct node* list){
 }
 
 
-void save_usr_data(struct node* plist){ //! : list of cur nodes
-    FILE* fp1;
-    struct usrdata temp;
-    printf("in saver\n");
-    set_usr_data();
-    fp1 = fopen("./USER_LOGS.bin", "rb+");
-    if(fp1==NULL){
-            printf("\nCannot open file\n");
-            exit(-1);
-    }
-    while(1){
-        if(fread(&temp, sizeof(struct usrdata), 1, fp1) <1) break;
-        if(strcmp(usr_king.name, temp.name)==0){
-            printf("%s: ", temp.name);
-            printf("\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, temp.now_my.poeple, temp.now_my.court, temp.now_my.treasury, KNRM);
-            print_stats();
-            temp = usr_king;
-            printf("\n- -%sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, temp.now_my.poeple, temp.now_my.court, temp.now_my.treasury, KNRM);
-            fseek(fp1, -sizeof(struct usrdata), SEEK_CUR);
-            fwrite(&temp, sizeof(struct usrdata), 1, fp1);
-            return;
-        }
-    }
-    fseek(fp1, 0, SEEK_END);
-    fwrite(&usr_king, sizeof(struct usrdata), 1, fp1);
-    fclose(fp1);
-}
-
 int main(){
     struct node *mylist=NULL;
 
-    #if INTERFACE
     print_start_game();
-    #endif // INTERFACE
 
     num = find_usrs_number();
     find_n_all();
 
     usr_king = get_usr_data();
-    set_usr_data();
     #if !INTERFACE
     printf("got usr data\n");
     #endif
@@ -764,13 +720,10 @@ int main(){
     print_break_point();
 
     while(!death_flag && !quit_flag){
-        set_usr_king(mylist);
-        set_file_usr_data("./USER_LOGS.bin");
         random_node(&mylist);
     }
     set_usr_king(mylist);
     print_exit_menu();
-    set_file_usr_data("./USER_LOGS.bin");
     if(!death_flag)
         printf("ok! bye\n");
     return 0;
