@@ -85,7 +85,9 @@ void set_usr_king(struct node*);
 void print_exit_menu();
 struct node * get_problem_files();
 void random_node(struct node**);
-void start_game();
+void print_start_game();
+void print_tutorial();
+void print_break_point();
 
 ///needed pre-functions
 int min(int a, int b){ return (a<b) ? a : b;}
@@ -389,13 +391,21 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
     else  { quit_flag=1;}
 }
 ///scoreboard and status
-void start_game(){
+void print_start_game(){
     clear();
     printf("\n\n");
     printf("            ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️\n\n          ");
     printf("  ☺️      WELCOME    ️  ☺️\n\n          ");
     printf("  ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️\n\n          ");
     printf("press ENTER to continue...");
+    getchar();
+    clear();
+}
+void print_tutorial(){
+    printf("\n--Use your wisdom  to make choices and rule your kingdom!!--\n");
+}
+void print_break_point(){
+    printf("Press ENTER to continue...\n");
     getchar();
     clear();
 }
@@ -588,9 +598,9 @@ void print_exit_menu(){
     }
     else{
         #if TERMINAL_CONSOLE
-        printf(" ️☠️  ☠️  ☠️ \n ️");
+        printf("\n\n\n           ️☠️  ☠️  ☠️ \n ️");
         #endif // TERMINAL_CONSOLE
-        printf("You LOST!!!\n");
+        printf("         You LOST!!!\n\n\n\n");
         set_usr_data();
     }
 }
@@ -621,7 +631,6 @@ struct usrdata get_usr_data(){
                 fwrite(&temp, sizeof(struct usrdata), 1, fp);
             }
             printf("%sWelcome back, %s!\n\n%s",MAGENTA, name1, KNRM);
-            ///TODO: show menu
             usr1 = temp;
             usr_king = temp;
             usr_found=1;
@@ -630,8 +639,8 @@ struct usrdata get_usr_data(){
     }
     if(usr_found==0){
         printf("%sWelcome to 'Bahram who caught zebras for a lifetime...' game, %s!!\n\n%s", MAGENTA, name1, KNRM );
-        ///tutorial!!!
-        ///TODO: show menu
+        print_tutorial();
+
         strcpy(usr1.name, name1);
         usr1.pgame =1;
         //for(int j=0;j<n;j++)usr1.problems_left[j]=3;
@@ -692,7 +701,7 @@ void set_usr_king(struct node* list){
 int main(){
     struct node *mylist=NULL;
 
-    start_game();
+    print_start_game();
 
     num = find_usrs_number();
     find_n_all();
@@ -701,11 +710,10 @@ int main(){
     #if !INTERFACE
     printf("got usr data\n");
     #endif
-
     my = usr_king.now_my;
     printf("Your current stats:\n ");
     print_stats();
-    ///press enter to continue
+    print_break_point();
 
     while(!death_flag && !quit_flag){
         random_node(&mylist);
