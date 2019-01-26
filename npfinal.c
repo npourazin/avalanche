@@ -10,6 +10,7 @@
 #include <windows.h>
 #endif
 #define INTERFACE 1
+#define TERMINAL_CONSOLE 1
 
 #define MAX_CHAR_LEN 1000
 #define MAX_PROBLEM_N 1000
@@ -99,11 +100,11 @@ void clear(){
 }
 void mysleep(){ ///sleeps 2sec
     #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-        sleep(2);
+        sleep(1);
     #endif
 
     #if defined(_WIN32) || defined(_WIN64)
-        Sleep(2000);
+        Sleep(1000);
     #endif
 }
 ///getting question files
@@ -168,6 +169,9 @@ void print_node_before_selection(struct node * current){
     #if !INTERFACE
     printf("(%d) Q%d: ", current->number, current->index);
     #endif
+    #if TERMINAL_CONSOLE
+        printf(" ⚖️  ");
+    #endif // TERMINAL_CONSOLE
     printf("%s%s\n",BLUE_3, current->problem);
     printf("%s", KNRM);
     printf("%s[1] %s\n",BLUE_4 ,current->choice[0].ans);
@@ -182,6 +186,9 @@ void print_node_before_selection(struct node * current){
 }
 void print_node_after_selection(struct node** plist, struct node * current , int ind){
     if(ind==1 || ind==2){
+        #if TERMINAL_CONSOLE
+        printf(" ⚖️  ");
+        #endif // TERMINAL_CONSOLE
         printf("%s%s\n",BLUE_3, current->problem);
         if(ind==1){
             printf("%s[1] %s\n",BLUE_7 ,current->choice[0].ans);
@@ -217,9 +224,7 @@ void print_node_after_selection(struct node** plist, struct node * current , int
             deleter(plist, current);
             n--;
         }
-        printf("%s", KNRM);
-        printf("%sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n",GREEN, my.poeple, my.court, my.treasury);
-        printf("%s", KNRM);
+        print_stats();
         #if INTERFACE
         mysleep();
         clear();
@@ -379,7 +384,17 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
 }
 ///scoreboard and status
 void print_stats(){
+    printf("%s", KNRM);
+    #if !TERMINAL_CONSOLE
     printf("Your currennt stats:\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
+    #endif
+    #if TERMINAL_CONSOLE
+    printf("%s⛹  Poeple:%d%s  ||%s ",GREEN, my.poeple, KNRM, GREEN);
+    printf(" ⚜️  Court:%d%s  ||%s  ", my.court, KNRM, GREEN);
+    printf(" ⛪  Treasury:%d\n", my.treasury);
+    printf("------------------------------------------------------\n\n%s", KNRM);
+    #endif // TERMINAL_CONSOLE
+    printf("%s", KNRM);
 }
 int find_usrs_number(){
     FILE* fp;
@@ -461,7 +476,16 @@ void show_scoreboard(int num){
 void show_menu(struct node* plist){
     int get_choice=0;
     printf("%sMENU:\n", KNRM);
-    printf("[1] new game\n[2] leadership scoreboard\n[-1] exit\nelse, Press any key to resume game.\n");
+
+    printf("[1] new game");
+    #if TERMINAL_CONSOLE
+    printf(" ♻️ \n ");
+    #endif // TERMINAL_CONSOLE
+    printf("[2] leadership scoreboard");
+    #if TERMINAL_CONSOLE
+    printf(" ⭐️ \n ");
+    #endif // TERMINAL_CONSOLE
+    printf("[-1] exit\nelse, Press any key to resume game.\n");
     if((!(scanf("%d", &get_choice)==1))){
         while ((getchar()) != '\n');
     }
@@ -471,6 +495,7 @@ void show_menu(struct node* plist){
     #endif
     struct usrdata temp;
     if(get_choice==1){
+        printf(" ⛔  ");
         printf("This feature is unfortunatly not available in this version, Stay tuned for further realeses!!\n");
       /*  FILE* fp;
         fp = fopen("./USER_NAMES.bin", "rb+");
@@ -522,6 +547,9 @@ void print_exit_menu(){
         printf("ok! bye\n");
     }
     else{
+        #if TERMINAL_CONSOLE
+        printf(" ️☠️  ☠️  ☠️ \n ️");
+        #endif // TERMINAL_CONSOLE
         printf("You LOST!!!\n");
         set_usr_data();
     }
@@ -561,7 +589,7 @@ struct usrdata get_usr_data(){
         }
     }
     if(usr_found==0){
-        printf("Welcome to 'melat dar hale sooghoot' game, %s!!\n\n%s", name1, KNRM );
+        printf("Welcome to 'Bahram who caught zebras for a lifetime...' game, %s!!\n\n%s", name1, KNRM );
         ///tutorial!!!
         ///TODO: show menu
         strcpy(usr1.name, name1);
@@ -628,7 +656,9 @@ int main(){
     printf("got usr data\n");
     #endif
     my = usr_king.now_my;
-    printf("Your currennt stats:\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
+    printf("Your current stats:\n ");
+    print_stats();
+    //printf("Your currennt stats:\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
     while(!death_flag && !quit_flag){
         //set_usr_data2();
         //set_usr_king(mylist);
