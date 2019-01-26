@@ -29,11 +29,11 @@
 #define BLUE_S "\x1b[34;1m"
 #define NONE        "\033[0m"
 
-int death_flag=0, quit_flag=0, ng_flag=0;
+///global variables
+int death_flag=0, quit_flag=0;
 int game_started=1;
-
 int n=0, num=0;
-
+///structs
 struct stats{
     int poeple;
     int court;
@@ -58,6 +58,7 @@ struct usrdata{
     int pnumber;
 }usr_king;
 
+///funtion prototypes
 int min(int, int);
 int max(int, int);
 void clear();
@@ -469,7 +470,7 @@ void show_scoreboard(int num){
 void show_menu(struct node* plist){
     int get_choice=0;
     printf("%sMENU:\n", KNRM);
-    printf("[1] new game\n[2] leadership scoreboard\n[-1] exit\nelse, enter press any key to resume game.\n");
+    printf("[1] new game\n[2] leadership scoreboard\n[-1] exit\nelse, Press any key to resume game.\n");
     if((!(scanf("%d", &get_choice)==1))){
         while ((getchar()) != '\n');
     }
@@ -479,7 +480,8 @@ void show_menu(struct node* plist){
     #endif
     struct usrdata temp;
     if(get_choice==1){
-        FILE* fp;
+        printf("This feature is unfortunatly not available in this version, Stay tuned for further realeses!!\n");
+      /*  FILE* fp;
         fp = fopen("./USER_NAMES.bin", "rb+");
         if(fp==NULL){
                 printf("\nCannot open file\n");
@@ -502,7 +504,7 @@ void show_menu(struct node* plist){
         }
         for(int i=0;i<10;i++) printf("%d ", usr_king.problems_left[i]);
         printf("\n");
-        print_stats();
+        print_stats();*/
     }
     if(get_choice==2){
         sort_scoreboard(num);
@@ -512,7 +514,12 @@ void show_menu(struct node* plist){
         print_exit_menu();
         exit(0);
     }
-
+    printf("Press any key to resume game.\n");
+    getchar();
+    getchar();
+    #if INTERFACE
+    clear();
+    #endif // INTERFACE
 }
 void print_exit_menu(){
     if(!death_flag){
