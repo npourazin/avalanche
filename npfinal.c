@@ -85,6 +85,7 @@ void set_usr_king(struct node*);
 void print_exit_menu();
 struct node * get_problem_files();
 void random_node(struct node**);
+void start_game();
 
 ///needed pre-functions
 int min(int a, int b){ return (a<b) ? a : b;}
@@ -388,6 +389,16 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
     else  { quit_flag=1;}
 }
 ///scoreboard and status
+void start_game(){
+    clear();
+    printf("\n\n");
+    printf("            ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️\n\n          ");
+    printf("  ☺️      WELCOME    ️  ☺️\n\n          ");
+    printf("  ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️ ☺️\n\n          ");
+    printf("press ENTER to continue...");
+    getchar();
+    clear();
+}
 void print_stats(){
     printf("%s", KNRM);
     #if !TERMINAL_CONSOLE
@@ -486,17 +497,22 @@ void show_scoreboard(int num){
 }
 void show_menu(struct node* plist){
     int get_choice=0;
+    char ex_p;
     printf("%sMENU:\n", KNRM);
 
-    printf(" [1] new game");
+    printf(" [1] New game");
     #if TERMINAL_CONSOLE
     printf(" ♻️ \n ");
     #endif // TERMINAL_CONSOLE
-    printf("[2] leadership scoreboard");
+    printf("[2] Leadership scoreboard");
     #if TERMINAL_CONSOLE
     printf(" ⭐️ \n ");
     #endif // TERMINAL_CONSOLE
-    printf("[-1] exit\nelse, Press any key to resume game.\n");
+    printf("[3] Save");
+    #if TERMINAL_CONSOLE
+    printf(" ⚡️ \n ");
+    #endif // TERMINAL_CONSOLE
+    printf("[-1] Exit\nelse, Press any key to resume game.\n");
     if((!(scanf("%d", &get_choice)==1))){
         while ((getchar()) != '\n');
     }
@@ -509,7 +525,7 @@ void show_menu(struct node* plist){
         #if TERMINAL_CONSOLE
         printf(" ⛔  ");
         #endif // TERMINAL_CONSOLE
-        printf("This feature is unfortunatly not available in this version, Stay tuned for further realeses!!\n");
+        printf("This feature is unfortunatly not available in this version, Stay tuned for further releses!!\n");
       /*  FILE* fp;
         fp = fopen("./USER_NAMES.bin", "rb+");
         if(fp==NULL){
@@ -539,8 +555,20 @@ void show_menu(struct node* plist){
         sort_scoreboard(num);
         show_scoreboard(min(10, num));
     }
-    if(get_choice ==-1){
+    if(get_choice ==3){
+        set_usr_king(plist);
         print_exit_menu();
+        printf("\nExit? [y/n]\n");
+        getchar();
+        ex_p = getchar();
+        if(ex_p =='y'){
+            printf("ok! bye\n");
+            exit(0);
+        }
+    }
+    if(get_choice==-1){
+        print_exit_menu();
+        printf("ok! bye\n");
         exit(0);
     }
     printf("Press any key to resume game.\n");
@@ -557,7 +585,6 @@ void print_exit_menu(){
         getchar();
         ans = getchar();
         if(ans=='y') set_usr_data();
-        printf("ok! bye\n");
     }
     else{
         #if TERMINAL_CONSOLE
@@ -593,7 +620,7 @@ struct usrdata get_usr_data(){
                 fseek(fp, -sizeof(struct usrdata), SEEK_CUR);
                 fwrite(&temp, sizeof(struct usrdata), 1, fp);
             }
-            printf("Welcome back, %s!\n\n%s", name1, KNRM);
+            printf("%sWelcome back, %s!\n\n%s",MAGENTA, name1, KNRM);
             ///TODO: show menu
             usr1 = temp;
             usr_king = temp;
@@ -665,6 +692,8 @@ void set_usr_king(struct node* list){
 int main(){
     struct node *mylist=NULL;
 
+    start_game();
+
     num = find_usrs_number();
     find_n_all();
 
@@ -676,16 +705,14 @@ int main(){
     my = usr_king.now_my;
     printf("Your current stats:\n ");
     print_stats();
-    //printf("Your currennt stats:\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
+    ///press enter to continue
+
     while(!death_flag && !quit_flag){
-        //set_usr_data2();
-        //set_usr_king(mylist);
         random_node(&mylist);
-        //clear();
     }
     set_usr_king(mylist);
     print_exit_menu();
-    //printf("%d", n);
-    //print_list(mylist);
+    if(!death_flag)
+        printf("ok! bye\n");
     return 0;
 }
