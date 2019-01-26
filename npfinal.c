@@ -151,7 +151,7 @@ void deleter(struct node **list, struct node *o_node){
         if(nn1==o_node){
             ///jumps over the head as it was taken care of
             n1->next = nn1->next;
-            break;
+            return;
         }
         n1=nn1;
         nn1=nn1->next;
@@ -332,7 +332,7 @@ void find_n_all(){
 }
 ///choosing a random questoin
 void random_node(struct node** mylist){ ///! : list of cur nodes
-    int rand_i, i;
+    int rand_i=0, i;
     int get_choice=0;
     struct node* pt = NULL;
     if(n==0 || game_started){
@@ -341,7 +341,6 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
         printf("\n\nrefilled\n");
         #endif
         *mylist = get_problem_files();
-
         if(game_started){
             ///loading the nodes from the previous game
             game_started=0;
@@ -349,7 +348,7 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
             for(int k=0;k<n;k++) printf("%d ", usr_king.problems_left[k]);
             printf("\n");
             #endif
-            struct node* pt = *mylist;
+             pt = *mylist;
             while(pt->next!=NULL){ ///!
                 pt->number = usr_king.problems_left[pt->index];
                 if(pt->number==0) {
@@ -360,12 +359,18 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
             }
         }
         if(*mylist== NULL){printf("There seems to be a problem with getting input files!\n"); exit(-1);}
-        find_n_all();
+
     }
     ///finding a random node from the list
     pt = *mylist;
     srand(time(NULL));
-    rand_i = rand()%n;
+    if(n!=0)
+        rand_i = rand()%n;
+    if(n==0){
+        *mylist = get_problem_files();
+        find_n_all();
+        rand_i = rand()%n;
+    }
     for(i=0;i<rand_i;i++) pt= pt->next;
     print_node_before_selection(pt);
 
@@ -386,7 +391,7 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
 void print_stats(){
     printf("%s", KNRM);
     #if !TERMINAL_CONSOLE
-    printf("Your currennt stats:\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
+    printf("\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
     #endif
     #if TERMINAL_CONSOLE
     printf("%s⛹  Poeple:%d%s  ||%s ",GREEN, my.poeple, KNRM, GREEN);
@@ -468,8 +473,14 @@ void show_scoreboard(int num){
     while(cnt<num){
         cnt++;
         if( fread(&temp, sizeof(struct usrdata), 1, fp) <1) break;
+        #if !INTERFACE
         printf("Name: %s, People: %d,Court: %d,Treasury: %d,", temp.name, temp.now_my.poeple, temp.now_my.court, temp.now_my.treasury);
         printf(" lost or not: %s, n:%d\n", (temp.pgame)? "No": "Yes" , temp.pnumber);
+        #endif
+        #if INTERFACE
+        printf("%sRank %d: %s => %d-%d-%d\n",(strcmp(temp.name, usr_king.name)==0) ? RED : YELOW, cnt, temp.name, temp.now_my.poeple, temp.now_my.court, temp.now_my.treasury);
+        printf("%s", KNRM);
+        #endif // INTERFACE
     }
     fclose(fp);
 }
@@ -477,7 +488,7 @@ void show_menu(struct node* plist){
     int get_choice=0;
     printf("%sMENU:\n", KNRM);
 
-    printf("[1] new game");
+    printf(" [1] new game");
     #if TERMINAL_CONSOLE
     printf(" ♻️ \n ");
     #endif // TERMINAL_CONSOLE
@@ -495,7 +506,9 @@ void show_menu(struct node* plist){
     #endif
     struct usrdata temp;
     if(get_choice==1){
+        #if TERMINAL_CONSOLE
         printf(" ⛔  ");
+        #endif // TERMINAL_CONSOLE
         printf("This feature is unfortunatly not available in this version, Stay tuned for further realeses!!\n");
       /*  FILE* fp;
         fp = fopen("./USER_NAMES.bin", "rb+");
@@ -572,9 +585,8 @@ struct usrdata get_usr_data(){
         if( fread(&temp, sizeof(struct usrdata), 1, fp) <1) break;
         if(strcmp(name1, temp.name)==0){
             if(temp.pgame==0 ){
-                ///this also should happen on ng_flag
                 temp.now_my.poeple=temp.now_my.court= temp.now_my.treasury =50;
-                temp.pgame= !death_flag;
+                temp.pgame= !death_flag; ///1
                 for(int i=0;i<MAX_PROBLEM_N;i++){
                     temp.problems_left[i] = (i<n) ? 3 : 0;
                 }
@@ -584,18 +596,23 @@ struct usrdata get_usr_data(){
             printf("Welcome back, %s!\n\n%s", name1, KNRM);
             ///TODO: show menu
             usr1 = temp;
+            usr_king = temp;
             usr_found=1;
             break;
         }
     }
     if(usr_found==0){
-        printf("Welcome to 'Bahram who caught zebras for a lifetime...' game, %s!!\n\n%s", name1, KNRM );
+        printf("%sWelcome to 'Bahram who caught zebras for a lifetime...' game, %s!!\n\n%s", MAGENTA, name1, KNRM );
         ///tutorial!!!
         ///TODO: show menu
         strcpy(usr1.name, name1);
         usr1.pgame =1;
-        for(int j=0;j<n;j++)usr1.problems_left[j]=3;
+        //for(int j=0;j<n;j++)usr1.problems_left[j]=3;
+        for(int i=0;i<MAX_PROBLEM_N;i++){
+            usr1.problems_left[i] = (i<n) ? 3 : 0;
+        }
         usr1.now_my.poeple=usr1.now_my.court= usr1.now_my.treasury =50;
+        usr1.pnumber = n;
         fseek(fp, 0, SEEK_END);
         fwrite(&usr1, sizeof(struct usrdata), 1, fp);
     }
@@ -655,6 +672,7 @@ int main(){
     #if !INTERFACE
     printf("got usr data\n");
     #endif
+
     my = usr_king.now_my;
     printf("Your current stats:\n ");
     print_stats();
