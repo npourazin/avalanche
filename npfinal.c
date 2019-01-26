@@ -9,8 +9,8 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
-#define INTERFACE 0
-#define TERMINAL_CONSOLE 0
+#define INTERFACE 1
+#define TERMINAL_CONSOLE 1
 
 #define MAX_CHAR_LEN 1000
 #define MAX_PROBLEM_N 1000
@@ -334,7 +334,7 @@ void find_n_all(){
     n = count;
 }
 ///choosing a random questoin
-void random_node(struct node** mylist){ ///! : list of cur nodes
+void random_node(struct node** mylist){
     int rand_i=0, i;
     int get_choice=0;
     struct node* pt = NULL;
@@ -522,7 +522,7 @@ void show_menu(struct node* plist){
     #if TERMINAL_CONSOLE
     printf(" ⚡️ \n ");
     #endif // TERMINAL_CONSOLE
-    printf("[-1] Exit\nelse, Press any key to resume game.\n");
+    printf("[-1] Exit\nelse, Enter any other number to resume game.\n");
     if((!(scanf("%d", &get_choice)==1))){
         while ((getchar()) != '\n');
     }
@@ -581,7 +581,8 @@ void show_menu(struct node* plist){
         printf("ok! bye\n");
         exit(0);
     }
-    printf("Press any key to resume game.\n");
+    else return;
+    printf("Press ENTER to resume game.\n");
     getchar();
     getchar();
     #if INTERFACE
@@ -656,7 +657,7 @@ struct usrdata get_usr_data(){
     return usr1;
 }
 ///setting usr data
-void set_usr_data(){ //! : list of cur nodes
+void set_usr_data(){
     FILE* fp;
     struct usrdata temp;
     int usr_found=0;
