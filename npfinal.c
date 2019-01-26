@@ -508,6 +508,7 @@ void show_scoreboard(int num){
 void show_menu(struct node* plist){
     int get_choice=0;
     char ex_p;
+    int right_choice_flag=0;
     printf("%sMENU:\n", KNRM);
 
     printf(" [1] New game");
@@ -522,7 +523,7 @@ void show_menu(struct node* plist){
     #if TERMINAL_CONSOLE
     printf(" ⚡️ \n ");
     #endif // TERMINAL_CONSOLE
-    printf("[-1] Exit\nelse, Enter any other number to resume game.\n");
+    printf("[-1] Exit game\nelse, Enter any other number to resume game.\n");
     if((!(scanf("%d", &get_choice)==1))){
         while ((getchar()) != '\n');
     }
@@ -536,6 +537,7 @@ void show_menu(struct node* plist){
         printf(" ⛔  ");
         #endif // TERMINAL_CONSOLE
         printf("This feature is unfortunatly not available in this version, Stay tuned for further releses!!\n");
+        right_choice_flag =1;
       /*  FILE* fp;
         fp = fopen("./USER_NAMES.bin", "rb+");
         if(fp==NULL){
@@ -564,6 +566,7 @@ void show_menu(struct node* plist){
     if(get_choice==2){
         sort_scoreboard(num);
         show_scoreboard(min(10, num));
+        right_choice_flag=1;
     }
     if(get_choice ==3){
         set_usr_king(plist);
@@ -575,19 +578,22 @@ void show_menu(struct node* plist){
             printf("ok! bye\n");
             exit(0);
         }
+        right_choice_flag=1;
     }
     if(get_choice==-1){
         print_exit_menu();
         printf("ok! bye\n");
         exit(0);
+        right_choice_flag=1;
     }
-    else return;
-    printf("Press ENTER to resume game.\n");
-    getchar();
-    getchar();
-    #if INTERFACE
-    clear();
-    #endif // INTERFACE
+    if(right_choice_flag){
+        printf("Press ENTER to resume game.\n");
+        getchar();
+        getchar();
+        #if INTERFACE
+        clear();
+        #endif // INTERFACE
+    }
 }
 void print_exit_menu(){
     if(!death_flag){
@@ -602,7 +608,11 @@ void print_exit_menu(){
         printf("\n\n\n           ️☠️  ☠️  ☠️ \n ️");
         #endif // TERMINAL_CONSOLE
         printf("         You LOST!!!\n\n\n\n");
-        set_usr_data();
+        char ans;
+        printf("Do you want to save your current game? [y/n]\n");
+        getchar();
+        ans = getchar();
+        if(ans=='y') set_usr_data();
     }
 }
 ///getting usr data
@@ -676,9 +686,11 @@ void set_usr_data(){
             ///come here u little peice of shit
             fseek(fp, -sizeof(struct usrdata), SEEK_CUR);
             fwrite(&usr_king, sizeof(struct usrdata), 1, fp);
-            break;
+            return;
         }
     }
+    fseek(fp, 0, SEEK_END);
+    fwrite(&usr_king, sizeof(struct usrdata), 1, fp);
     fclose(fp);
 }
 void set_usr_king(struct node* list){
