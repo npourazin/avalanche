@@ -9,7 +9,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
-#define INTERFACE 1
+#define INTERFACE 0
 
 #define MAX_CHAR_LEN 1000
 #define MAX_PROBLEM_N 1000
@@ -61,6 +61,7 @@ struct usrdata{
 int min(int, int);
 int max(int, int);
 void clear();
+void mysleep();
 void file_name_pre(char*);
 void add_front(struct node **, struct node *);
 void add_end(struct node *, struct node *);
@@ -83,8 +84,28 @@ void print_exit_menu();
 struct node * get_problem_files();
 void random_node(struct node**);
 
+///needed pre-functions
 int min(int a, int b){ return (a<b) ? a : b;}
 int max(int a, int b){ return (a>b) ? a : b;}
+void clear(){
+    #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+        system("clear");
+    #endif
+
+    #if defined(_WIN32) || defined(_WIN64)
+        system("cls");
+    #endif
+}
+void mysleep(){ ///sleeps 2sec
+    #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+        sleep(2);
+    #endif
+
+    #if defined(_WIN32) || defined(_WIN64)
+        Sleep(2000);
+    #endif
+}
+///getting question files
 void file_name_pre(char st[MAX_CHAR_LEN+10]){
     #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
         int len = strlen(st);
@@ -157,6 +178,214 @@ void print_node_before_selection(struct node * current){ ///!
     printf("%s", KNRM);
 
 }
+void print_node_after_selection(struct node** plist, struct node * current , int ind){ ///!
+    if(ind==1 || ind==2){
+        printf("%s%s\n",BLUE_3, current->problem);
+        if(ind==1){
+            printf("%s[1] %s\n",BLUE_7 ,current->choice[0].ans);
+            printf("%s", KNRM);
+            printf("%s[2] %s\n",BLUE_9, current->choice[1].ans);
+        }
+        if(ind==2){
+            printf("%s[1] %s\n",BLUE_9 ,current->choice[0].ans);
+            printf("%s", KNRM);
+            printf("%s[2] %s\n",BLUE_7, current->choice[1].ans);
+        }
+        printf("%s", KNRM);
+        current->number--; ///is atleast 1
+
+        my.poeple = min(100, (my.poeple+current->choice[ind-1].dif[0]));
+        if(my.poeple<=0) {
+            my.poeple=0;
+            death_flag =1;
+        }
+        my.court = min(100, (my.court + current->choice[ind -1 ].dif[1]));
+        if(my.court<=0){
+            my.court=0;
+            death_flag =1;
+        }
+        my.treasury= min(100, (my.treasury + current->choice[ind -1].dif[2]));
+        if(my.treasury<=0) {
+            my.treasury=0;
+            death_flag =1;
+        }
+
+        if((my.poeple+ my.court+ my.treasury)/3 <10) death_flag=1;
+        if(current->number==0){
+            deleter(plist, current);
+            n--;
+            ///u need the number of each node!
+        }
+        printf("%s", KNRM);
+        //print_stats();
+        printf("%sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n",GREEN, my.poeple, my.court, my.treasury);
+        printf("%s", KNRM);
+        #if INTERFACE
+        mysleep();
+        clear();
+        #endif // INTERFACE
+    }
+    if(ind ==3){
+        show_menu(*plist);
+        //clear();
+
+    }
+
+}
+struct node * get_problem_files(){
+    FILE * fp, *fpin;
+    char inname[MAX_CHAR_LEN+10];
+    char buf_name[MAX_CHAR_LEN+10];
+    char buf1[MAX_CHAR_LEN+10];
+    int cnt=0;
+    struct node *list = NULL;
+    int tmp=0;
+
+    ///gets(inname);
+    strcpy(inname, "./CHOICES.txt");
+
+    fp = fopen(inname, "r+");
+    if(fp==NULL){
+        printf("Cannot open file\n");
+        return NULL;
+    }
+    while(fgets(buf_name, MAX_CHAR_LEN, fp) != NULL){
+        cnt=0;
+        file_name_pre(buf_name);
+        fpin = fopen(buf_name, "r+");
+        if(fpin==NULL){
+            printf("\nCannot open file\n");
+            return NULL;
+        }
+        struct node *new_node = (struct node *)malloc(sizeof(struct node));
+        while(fgets(buf1, MAX_CHAR_LEN, fpin) != NULL){
+            if(new_node== NULL){
+                printf("Cannot create node\n");
+                exit(-1);
+            }
+            switch(cnt%9){ ///set new_node values
+                case 0: {
+                    strcpy(new_node->problem, buf1);
+                    break;
+                }
+                case 1: {
+                    strcpy(new_node->choice[0].ans, buf1);
+                    break;
+                }
+                case 2: {
+                    new_node->choice[0].dif[0]=(int)atoi(buf1);
+                    break;
+                }
+                case 3: {
+                    new_node->choice[0].dif[1]=(int)atoi(buf1);
+                    break;
+                }
+                case 4: {
+                    new_node->choice[0].dif[2]=(int)atoi(buf1);
+                    break;
+                }
+                case 5: {
+                    strcpy(new_node->choice[1].ans, buf1);
+                    break;
+                }
+                case 6: {
+                    new_node->choice[1].dif[0]=(int)atoi(buf1);
+                    break;
+                }
+                case 7: {
+                    new_node->choice[1].dif[1]=(int)atoi(buf1);
+                    break;
+                }
+                case 8: {
+                    new_node->choice[1].dif[2]=(int)atoi(buf1);
+                    break;
+                }
+            }
+            cnt++;
+        }
+        new_node->number = 3;
+        if(list == NULL)     add_front(&(list), new_node);
+        else    add_end(list, new_node);
+
+    }
+    fclose(fp);
+    return list;
+}
+void find_n_all(){
+    FILE* fp;
+    int count =0;
+    char buf2[MAX_CHAR_LEN+10];
+
+    fp = fopen("CHOICES.txt", "r+");
+    if(fp==NULL){
+        printf("Cannot open file\n");
+        exit(-1);
+    }
+    while(fgets(buf2, MAX_CHAR_LEN, fp) != NULL)
+        count++;
+    #if !INTERFACE
+    printf("Number of Lines = %d\n", count);
+    #endif
+    n = count;
+}
+///choosing a random questoin
+void random_node(struct node** mylist){ ///! : list of cur nodes
+    int rand_i, i;
+    int get_choice=0;
+    struct node* pt = NULL;
+    //struct node* cur = *mylist;
+    //printf("in random node:\n");
+    if(n==0 || game_started){
+
+        //printf("\n\n\n\n\n\n\n\n\nrefilled\n");
+        *mylist = get_problem_files();
+
+        if(game_started){
+            game_started=0;
+            #if !INTERFACE
+            for(int k=0;k<n;k++) printf("%d ", usr_king.problems_left[k]);
+            printf("\n");
+            #endif
+            struct node* pt = *mylist;
+            while(pt->next!=NULL){ ///!
+                pt->number = usr_king.problems_left[pt->index];
+                //printf("%d : %d\n", pt->index, pt->number);
+                if(pt->number==0) {
+                    //printf("boogh %d\n", pt->index);
+                    deleter(mylist, pt);
+                    n--;
+                }
+                pt = pt->next;
+            }
+            game_started=0;
+
+        }
+
+        //printf("---%d\n", n);
+        /**/
+        if(*mylist== NULL){printf("There seems to be a problem with getting input files!\n"); exit(-1);}
+        find_n_all();
+    }
+    pt = *mylist;
+    srand(time(NULL));
+    rand_i = rand()%n;
+    for(i=0;i<rand_i;i++) pt= pt->next;
+    print_node_before_selection(pt);
+
+    while(!((get_choice==1)||(get_choice==2) ||(get_choice==-1) || (get_choice==3))){
+        if((!(scanf("%d", &get_choice)==1))){
+            while ((getchar()) != '\n');
+        }
+        if(!((get_choice==1)||(get_choice==2) ||(get_choice==-1) || (get_choice==3))){
+            printf("%sInvalid input!\nPlease try again!\n", RED);
+        }
+        printf("%s", KNRM);
+    }
+    clear();
+    if(get_choice==1 || get_choice==2 || get_choice==3) {print_node_after_selection(mylist, pt, get_choice);}
+    else  { quit_flag=1;}
+}
+///scoreboard and status
 void print_stats(){
     printf("Your currennt stats:\n %sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n%s",GREEN, my.poeple, my.court, my.treasury, KNRM);
 }
@@ -285,95 +514,22 @@ void show_menu(struct node* plist){
     }
 
 }
-void print_node_after_selection(struct node** plist, struct node * current , int ind){ ///!
-    if(ind==1 || ind==2){
-        printf("%s%s\n",BLUE_3, current->problem);
-        if(ind==1){
-            printf("%s[1] %s\n",BLUE_7 ,current->choice[0].ans);
-            printf("%s", KNRM);
-            printf("%s[2] %s\n",BLUE_9, current->choice[1].ans);
-        }
-        if(ind==2){
-            printf("%s[1] %s\n",BLUE_9 ,current->choice[0].ans);
-            printf("%s", KNRM);
-            printf("%s[2] %s\n",BLUE_7, current->choice[1].ans);
-        }
-        printf("%s", KNRM);
-        current->number--; ///is atleast 1
-
-        my.poeple = min(100, (my.poeple+current->choice[ind-1].dif[0]));
-        if(my.poeple<=0) {
-            my.poeple=0;
-            death_flag =1;
-        }
-        my.court = min(100, (my.court + current->choice[ind -1 ].dif[1]));
-        if(my.court<=0){
-            my.court=0;
-            death_flag =1;
-        }
-        my.treasury= min(100, (my.treasury + current->choice[ind -1].dif[2]));
-        if(my.treasury<=0) {
-            my.treasury=0;
-            death_flag =1;
-        }
-
-        if((my.poeple+ my.court+ my.treasury)/3 <10) death_flag=1;
-        if(current->number==0){
-            deleter(plist, current);
-            n--;
-            ///u need the number of each node!
-        }
-        printf("%s", KNRM);
-        //print_stats();
-        printf("%sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n",GREEN, my.poeple, my.court, my.treasury);
-        printf("%s", KNRM);
-        #if INTERFACE
-        mysleep();
-        clear();
-        #endif // INTERFACE
+void print_exit_menu(){
+    if(!death_flag){
+        char ans;
+        printf("Do you want to save your current game? [y/n]\n");
+        getchar();
+        ans = getchar();
+        if(ans=='y') set_usr_data();
+        printf("ok! bye\n");
     }
-    if(ind ==3){
-        show_menu(*plist);
-        //clear();
-
+    else{
+        printf("You LOST!!!\n");
+        set_usr_data();
     }
-
+    //exit(1);
 }
-void find_n_all(){
-    FILE* fp;
-    int count =0;
-    char buf2[MAX_CHAR_LEN+10];
-
-    fp = fopen("CHOICES.txt", "r+");
-    if(fp==NULL){
-        printf("Cannot open file\n");
-        exit(-1);
-    }
-    while(fgets(buf2, MAX_CHAR_LEN, fp) != NULL)
-        count++;
-    #if !INTERFACE
-    printf("Number of Lines = %d\n", count);
-    #endif
-    n = count;
-}
-void clear(){
-    #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-        system("clear");
-    #endif
-
-    #if defined(_WIN32) || defined(_WIN64)
-        system("cls");
-    #endif
-}
-void mysleep(){ ///sleeps 1sec before updating to next generation
-    #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-        sleep(2);
-    #endif
-
-    #if defined(_WIN32) || defined(_WIN64)
-        Sleep(2000);
-    #endif
-}
+///getting usr data
 struct usrdata get_usr_data(){
     FILE* fp;
     struct usrdata temp, usr1;
@@ -421,6 +577,7 @@ struct usrdata get_usr_data(){
     fclose(fp);
     return usr1;
 }
+///setting usr data
 void set_usr_data(){ //! : list of cur nodes
     FILE* fp;
     struct usrdata temp;
@@ -461,158 +618,6 @@ void set_usr_king(struct node* list){
         pt = pt->next;
     }
 }
-void print_exit_menu(){
-    if(!death_flag){
-        char ans;
-        printf("Do you want to save your current game? [y/n]\n");
-        getchar();
-        ans = getchar();
-        if(ans=='y') set_usr_data();
-        printf("ok! bye\n");
-    }
-    else{
-        printf("You LOST!!!\n");
-        set_usr_data();
-    }
-    //exit(1);
-}
-
-struct node * get_problem_files(){
-    FILE * fp, *fpin;
-    char inname[MAX_CHAR_LEN+10];
-    char buf_name[MAX_CHAR_LEN+10];
-    char buf1[MAX_CHAR_LEN+10];
-    int cnt=0;
-    struct node *list = NULL;
-    int tmp=0;
-
-    ///gets(inname);
-    strcpy(inname, "./CHOICES.txt");
-
-    fp = fopen(inname, "r+");
-    if(fp==NULL){
-        printf("Cannot open file\n");
-        return NULL;
-    }
-    while(fgets(buf_name, MAX_CHAR_LEN, fp) != NULL){
-        cnt=0;
-        file_name_pre(buf_name);
-        fpin = fopen(buf_name, "r+");
-        if(fpin==NULL){
-            printf("\nCannot open file\n");
-            return NULL;
-        }
-        struct node *new_node = (struct node *)malloc(sizeof(struct node));
-        while(fgets(buf1, MAX_CHAR_LEN, fpin) != NULL){
-            if(new_node== NULL){
-                printf("Cannot create node\n");
-                exit(-1);
-            }
-            switch(cnt%9){ ///set new_node values
-                case 0: {
-                    strcpy(new_node->problem, buf1);
-                    break;
-                }
-                case 1: {
-                    strcpy(new_node->choice[0].ans, buf1);
-                    break;
-                }
-                case 2: {
-                    new_node->choice[0].dif[0]=(int)atoi(buf1);
-                    break;
-                }
-                case 3: {
-                    new_node->choice[0].dif[1]=(int)atoi(buf1);
-                    break;
-                }
-                case 4: {
-                    new_node->choice[0].dif[2]=(int)atoi(buf1);
-                    break;
-                }
-                case 5: {
-                    strcpy(new_node->choice[1].ans, buf1);
-                    break;
-                }
-                case 6: {
-                    new_node->choice[1].dif[0]=(int)atoi(buf1);
-                    break;
-                }
-                case 7: {
-                    new_node->choice[1].dif[1]=(int)atoi(buf1);
-                    break;
-                }
-                case 8: {
-                    new_node->choice[1].dif[2]=(int)atoi(buf1);
-                    break;
-                }
-            }
-            cnt++;
-        }
-        new_node->number = 3;
-        if(list == NULL)     add_front(&(list), new_node);
-        else    add_end(list, new_node);
-
-    }
-    fclose(fp);
-    return list;
-}
-void random_node(struct node** mylist){ ///! : list of cur nodes
-    int rand_i, i;
-    int get_choice=0;
-    struct node* pt = NULL;
-    //struct node* cur = *mylist;
-    //printf("in random node:\n");
-    if(n==0 || game_started){
-
-        //printf("\n\n\n\n\n\n\n\n\nrefilled\n");
-        *mylist = get_problem_files();
-
-        if(game_started){
-            game_started=0;
-            #if !INTERFACE
-            for(int k=0;k<n;k++) printf("%d ", usr_king.problems_left[k]);
-            printf("\n");
-            #endif
-            struct node* pt = *mylist;
-            while(pt->next!=NULL){ ///!
-                pt->number = usr_king.problems_left[pt->index];
-                //printf("%d : %d\n", pt->index, pt->number);
-                if(pt->number==0) {
-                    //printf("boogh %d\n", pt->index);
-                    deleter(mylist, pt);
-                    n--;
-                }
-                pt = pt->next;
-            }
-            game_started=0;
-
-        }
-
-        //printf("---%d\n", n);
-        /**/
-        if(*mylist== NULL){printf("There seems to be a problem with getting input files!\n"); exit(-1);}
-        find_n_all();
-    }
-    pt = *mylist;
-    srand(time(NULL));
-    rand_i = rand()%n;
-    for(i=0;i<rand_i;i++) pt= pt->next;
-    print_node_before_selection(pt);
-
-    while(!((get_choice==1)||(get_choice==2) ||(get_choice==-1) || (get_choice==3))){
-        if((!(scanf("%d", &get_choice)==1))){
-            while ((getchar()) != '\n');
-        }
-        if(!((get_choice==1)||(get_choice==2) ||(get_choice==-1) || (get_choice==3))){
-            printf("%sInvalid input!\nPlease try again!\n", RED);
-        }
-        printf("%s", KNRM);
-    }
-    clear();
-    if(get_choice==1 || get_choice==2 || get_choice==3) {print_node_after_selection(mylist, pt, get_choice);}
-    else  { quit_flag=1;}
-}
-
 
 
 int main(){
