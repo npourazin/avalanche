@@ -9,8 +9,8 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
-#define INTERFACE 1
-#define TERMINAL_CONSOLE 1
+#define INTERFACE 0
+#define TERMINAL_CONSOLE 0
 
 #define MAX_CHAR_LEN 1000
 #define MAX_PROBLEM_N 1000
