@@ -9,7 +9,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
-#define INTERFACE 0
+#define INTERFACE 1
 
 #define MAX_CHAR_LEN 1000
 #define MAX_PROBLEM_N 1000
@@ -115,20 +115,19 @@ void file_name_pre(char st[MAX_CHAR_LEN+10]){
             st[i+2]=st[i];
         }
         st[0]='.';
-        ///unix is right what about windows?
         st[1]='/';
         if(st[len+1]==10)
             st[len]=0;
     #endif // defined
 }
-void add_front(struct node **plist, struct node *new_node){ ///!
+void add_front(struct node **plist, struct node *new_node){
+    ///this function is only called when the list is empty
     new_node->next = *plist;
     new_node->index=0;
-    ///add alll other indexes?
     *plist = new_node;
-
 }
 void add_end(struct node *list, struct node * new_node){
+    ///push_back
     struct node *current;
     for(current = list; current-> next != NULL; current = current->next);
     current->next = new_node;
@@ -158,14 +157,14 @@ void deleter(struct node **list, struct node *o_node){
     }
     return;
 }
-void print_list(struct node *list){///!
+void print_list(struct node *list){
     struct node * current = list;
     while(current != NULL){
         printf("(%d) Q%d: \n", current->number, current->index);
         current = current->next;
     }
 }
-void print_node_before_selection(struct node * current){ ///!
+void print_node_before_selection(struct node * current){
     #if !INTERFACE
     printf("(%d) Q%d: ", current->number, current->index);
     #endif
@@ -175,11 +174,13 @@ void print_node_before_selection(struct node * current){ ///!
     printf("%s", KNRM);
     printf("%s[2] %s\n",BLUE_4, current->choice[1].ans);
     printf("%s", KNRM);
+    printf("%s[3] menu\n\n", CYAN);
+    printf("%s", KNRM);
     printf("%s[-1] Exit game!\n\n", RED);
     printf("%s", KNRM);
 
 }
-void print_node_after_selection(struct node** plist, struct node * current , int ind){ ///!
+void print_node_after_selection(struct node** plist, struct node * current , int ind){
     if(ind==1 || ind==2){
         printf("%s%s\n",BLUE_3, current->problem);
         if(ind==1){
@@ -215,10 +216,8 @@ void print_node_after_selection(struct node** plist, struct node * current , int
         if(current->number==0){
             deleter(plist, current);
             n--;
-            ///u need the number of each node!
         }
         printf("%s", KNRM);
-        //print_stats();
         printf("%sPoeple:%d, Court:%d, Treasury:%d\n----------------------------------\n\n",GREEN, my.poeple, my.court, my.treasury);
         printf("%s", KNRM);
         #if INTERFACE
@@ -228,13 +227,11 @@ void print_node_after_selection(struct node** plist, struct node * current , int
     }
     if(ind ==3){
         show_menu(*plist);
-        //clear();
-
     }
 
 }
 struct node * get_problem_files(){
-    FILE * fp, *fpin;
+    FILE * fp, *fpin; ///whereas fp points to CHOICES.txt and fpin point to the question files. (ci.txt)
     char inname[MAX_CHAR_LEN+10];
     char buf_name[MAX_CHAR_LEN+10];
     char buf1[MAX_CHAR_LEN+10];
@@ -242,7 +239,6 @@ struct node * get_problem_files(){
     struct node *list = NULL;
     int tmp=0;
 
-    ///gets(inname);
     strcpy(inname, "./CHOICES.txt");
 
     fp = fopen(inname, "r+");
@@ -334,14 +330,15 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
     int rand_i, i;
     int get_choice=0;
     struct node* pt = NULL;
-    //struct node* cur = *mylist;
-    //printf("in random node:\n");
     if(n==0 || game_started){
-
-        //printf("\n\n\n\n\n\n\n\n\nrefilled\n");
+        ///filling(if (game_started)) or refilling (if (n==0)) the list
+        #if !INTERFACE
+        printf("\n\nrefilled\n");
+        #endif
         *mylist = get_problem_files();
 
         if(game_started){
+            ///loading the nodes from the previous game
             game_started=0;
             #if !INTERFACE
             for(int k=0;k<n;k++) printf("%d ", usr_king.problems_left[k]);
@@ -350,23 +347,17 @@ void random_node(struct node** mylist){ ///! : list of cur nodes
             struct node* pt = *mylist;
             while(pt->next!=NULL){ ///!
                 pt->number = usr_king.problems_left[pt->index];
-                //printf("%d : %d\n", pt->index, pt->number);
                 if(pt->number==0) {
-                    //printf("boogh %d\n", pt->index);
                     deleter(mylist, pt);
                     n--;
                 }
                 pt = pt->next;
             }
-            game_started=0;
-
         }
-
-        //printf("---%d\n", n);
-        /**/
         if(*mylist== NULL){printf("There seems to be a problem with getting input files!\n"); exit(-1);}
         find_n_all();
     }
+    ///finding a random node from the list
     pt = *mylist;
     srand(time(NULL));
     rand_i = rand()%n;
@@ -447,7 +438,7 @@ void sort_scoreboard_once(int size){
 }
 void sort_scoreboard(int num1){
     for(int i=0;i<num1;i++)
-        sort_scoreboard_once(num);
+        sort_scoreboard_once(num1);
 }
 void show_scoreboard(int num){
     struct usrdata temp;
@@ -534,7 +525,6 @@ void print_exit_menu(){
         printf("You LOST!!!\n");
         set_usr_data();
     }
-    //exit(1);
 }
 ///getting usr data
 struct usrdata get_usr_data(){
