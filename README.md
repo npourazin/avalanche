@@ -1,2 +1,5 @@
-# avalanche-97
-final-project-basics-97(T1-bakhshi)
+# avalanche97
+Empire simulation.
+
+(bahram who caught zebras for a lifetime!!)
+
